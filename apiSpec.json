@@ -1,0 +1,1441 @@
+{
+  "openapi": "3.0.4",
+  "info": {
+    "title": "Notes Taking App",
+    "description": "The AI-powered Note-Taking Application is a standalone, full-stack system that operates on web platform. It is designed using a modular architecture that separates the concerns of frontend (UI/UX), backend (business logic and API), machine learning services (summarization), and data persistence (PostgreSQL). The system does not depend on any existing applications but integrates with third-party libraries and APIs for ML tasks.",
+    "version": "1.0"
+  },
+  "externalDocs": {
+    "description": "SRS Document",
+    "url": "https://docs.google.com/document/d/1zJ4vKH51BczhO4teLoeTaYMjTMGgTxnM-0DH5KXWBKU/edit?usp=sharing"
+  },
+  "servers": [
+    {
+      "url": "http://localhost:8000/api/v1"
+    }
+  ],
+  "tags": [
+    {
+      "name": "auth",
+      "description": "everything about auth feature"
+    },
+    {
+      "name": "user",
+      "description": "everything about user management feature"
+    },
+    {
+      "name": "notes",
+      "description": "notes main feature of CRUD"
+    },
+    {
+      "name": "category",
+      "description": "CRUD category of notes"
+    },
+    {
+      "name": "AI notes",
+      "description": "summarization AI feature"
+    }
+  ],
+  "paths": {
+    "/auth/register": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "user registration account",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserRegister"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/UserRegister"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/auth/login": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "summary": "user login account",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/UserLogin"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/UserLogin"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/auth/refresh/web": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "regenerate access token using refresh token for web",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RefreshToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RefreshToken"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/auth/refresh/mobile": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/RefreshToken"
+        },
+        "summary": "regenerate access token using refresh token for mobile",
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/RefreshToken"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/auth/logout": {
+      "post": {
+        "tags": [
+          "auth"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "logout account",
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/RefreshToken"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/Logout"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/user": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "update user's profile",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/EditUserProfile"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PutResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/user/pass": {
+      "put": {
+        "tags": [
+          "user"
+        ],
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "summary": "update user's password",
+        "requestBody": {
+          "$ref": "#/components/requestBodies/EditUserPassword"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PutResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/notes": {
+      "post": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "create new notes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Notes"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/PostResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "read all notes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/search"
+          },
+          {
+            "$ref": "#/components/parameters/tagsSearch"
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ReadAllNotesResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/notes/{notesId}": {
+      "get": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "read one notes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ReadOneNotesResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "update one notes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Notes"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PutResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "notes"
+        ],
+        "summary": "delete one notes",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeleteResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "404": {
+            "$ref": "#/components/responses/NotFoundErrorResponse"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/category": {
+      "post": {
+        "tags": [
+          "category"
+        ],
+        "summary": "create new category",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Category"
+        },
+        "responses": {
+          "201": {
+            "$ref": "#/components/responses/PostResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "get": {
+        "tags": [
+          "category"
+        ],
+        "parameters": [
+          {
+            "$ref": "#/components/parameters/search"
+          }
+        ],
+        "summary": "read all category",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ReadAllCategory"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/category/{categoryId}": {
+      "get": {
+        "tags": [
+          "category"
+        ],
+        "summary": "read one category",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/ReadOneCategory"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "put": {
+        "tags": [
+          "category"
+        ],
+        "summary": "update one category",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "requestBody": {
+          "$ref": "#/components/requestBodies/Category"
+        },
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/PutResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      },
+      "delete": {
+        "tags": [
+          "category"
+        ],
+        "summary": "delete one category",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/DeleteResponse"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    },
+    "/summary/{notesId}": {
+      "post": {
+        "tags": [
+          "AI notes"
+        ],
+        "summary": "summary notes using AI",
+        "security": [
+          {
+            "bearerAuth": []
+          }
+        ],
+        "responses": {
+          "200": {
+            "$ref": "#/components/responses/AISummaryNotes"
+          },
+          "400": {
+            "$ref": "#/components/responses/ClientErrorResponse"
+          },
+          "401": {
+            "$ref": "#/components/responses/AuthenticationErrorResponse"
+          },
+          "403": {
+            "$ref": "#/components/responses/ForbiddenErrorResponse"
+          },
+          "422": {
+            "$ref": "#/components/responses/ValidationError"
+          },
+          "500": {
+            "$ref": "#/components/responses/InternalServerErrorResponse"
+          }
+        }
+      }
+    }
+  },
+  "components": {
+    "parameters": {
+      "RefreshToken": {
+        "name": "refreshToken",
+        "in": "cookie",
+        "description": "refresh token from cookie",
+        "schema": {
+          "$ref": "#/components/schemas/JWTtoken"
+        }
+      },
+      "search": {
+        "name": "search",
+        "in": "query",
+        "description": "search keyword query params",
+        "schema": {
+          "type": "string",
+          "example": "programming"
+        }
+      },
+      "tagsSearch": {
+        "name": "tags",
+        "in": "query",
+        "description": "search notes by tags",
+        "schema": {
+          "type": "string",
+          "example": "programming"
+        }
+      }
+    },
+    "requestBodies": {
+      "UserRegister": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UserRegistration"
+            }
+          }
+        }
+      },
+      "UserLogin": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/UserLogin"
+            }
+          }
+        }
+      },
+      "RefreshToken": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "refreshToken": {
+                  "$ref": "#/components/schemas/JWTtoken"
+                }
+              }
+            }
+          }
+        }
+      },
+      "EditUserProfile": {
+        "required": true,
+        "content": {
+          "multipart/form-data": {
+            "schema": {
+              "$ref": "#/components/schemas/UserProfile"
+            }
+          }
+        }
+      },
+      "EditUserPassword": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "oldPassword": {
+                  "type": "string",
+                  "example": "john1234"
+                },
+                "newPassword": {
+                  "type": "string",
+                  "example": "john12345"
+                },
+                "confirmPassword": {
+                  "type": "string",
+                  "example": "john12345"
+                }
+              }
+            }
+          }
+        }
+      },
+      "Notes": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/NoteRequest"
+            }
+          }
+        }
+      },
+      "Category": {
+        "required": true,
+        "content": {
+          "application/json": {
+            "schema": {
+              "$ref": "#/components/schemas/CategoryRequest"
+            }
+          }
+        }
+      }
+    },
+    "responses": {
+      "UserRegister": {
+        "description": "success register user",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "integer",
+                  "format": "int32",
+                  "example": "201"
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": "true"
+                },
+                "message": {
+                  "type": "string",
+                  "example": "success register user!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "UserLogin": {
+        "description": "user login response",
+        "headers": {
+          "Set-Cookie": {
+            "schema": {
+              "type": "string",
+              "example": "refreshToken=eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9; Path=/; HttpOnly"
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Login success!"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "refreshToken": {
+                      "$ref": "#/components/schemas/JWTtoken"
+                    },
+                    "accessToken": {
+                      "$ref": "#/components/schemas/JWTtoken"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "RefreshToken": {
+        "description": "regenerate access token response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Access token granted!"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "accessToken": {
+                      "$ref": "#/components/schemas/JWTtoken"
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "Logout": {
+        "description": "logout user",
+        "headers": {
+          "Set-Cookie": {
+            "schema": {
+              "type": "string",
+              "example": ""
+            }
+          }
+        },
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Logout success!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReadAllNotesResponse": {
+        "description": "success read all notes data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data are found!"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/NoteResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReadOneNotesResponse": {
+        "description": "success read one notes data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data is found!"
+                },
+                "data": {
+                  "$ref": "#/components/schemas/NoteResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReadAllCategory": {
+        "description": "success read all category data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data are found!"
+                },
+                "data": {
+                  "type": "array",
+                  "items": {
+                    "$ref": "#/components/schemas/CategoryResponse"
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ReadOneCategory": {
+        "description": "success read one category data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data is found!"
+                },
+                "data": {
+                  "$ref": "#/components/schemas/CategoryResponse"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PostResponse": {
+        "description": "success create data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 201
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data is created!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "PutResponse": {
+        "description": "success update data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data is updated!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "DeleteResponse": {
+        "description": "success update data response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data is deleted!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AISummaryNotes": {
+        "description": "success summary notes",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 200
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": true
+                },
+                "message": {
+                  "type": "string",
+                  "example": "summary is success!"
+                },
+                "data": {
+                  "type": "object",
+                  "properties": {
+                    "id": {
+                      "type": "string",
+                      "example": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+                    },
+                    "name": {
+                      "type": "string",
+                      "example": "Sample Notes"
+                    },
+                    "notes": {
+                      "type": "string",
+                      "example": "lorem ipsum ...."
+                    },
+                    "summary": {
+                      "type": "string",
+                      "example": "lorem ipsum ...."
+                    },
+                    "category": {
+                      "type": "string",
+                      "example": "Programming"
+                    },
+                    "tags": {
+                      "type": "array",
+                      "items": {
+                        "type": "string",
+                        "example": "programming"
+                      }
+                    }
+                  }
+                }
+              }
+            }
+          }
+        }
+      },
+      "ClientErrorResponse": {
+        "description": "client error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 400
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Invalid request!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ValidationError": {
+        "description": "validation error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 422
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Validation Error"
+                }
+              }
+            }
+          }
+        }
+      },
+      "AuthenticationErrorResponse": {
+        "description": "authentication error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 401
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Error unauthenticated user"
+                }
+              }
+            }
+          }
+        }
+      },
+      "ForbiddenErrorResponse": {
+        "description": "forbidden error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 403
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Error access forbidden"
+                }
+              }
+            }
+          }
+        }
+      },
+      "NotFoundErrorResponse": {
+        "description": "not found error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 404
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Data not found!"
+                }
+              }
+            }
+          }
+        }
+      },
+      "InternalServerErrorResponse": {
+        "description": "internal server error response",
+        "content": {
+          "application/json": {
+            "schema": {
+              "type": "object",
+              "properties": {
+                "code": {
+                  "type": "number",
+                  "example": 500
+                },
+                "status": {
+                  "type": "boolean",
+                  "example": false
+                },
+                "message": {
+                  "type": "string",
+                  "example": "Internal server error!"
+                }
+              }
+            }
+          }
+        }
+      }
+    },
+    "schemas": {
+      "JWTtoken": {
+        "type": "string",
+        "example": "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJzdWIiOiIxMjM0NTY3ODkwIiwibmFtZSI6IkpvaG4gRG9lIiwiaWF0IjoxNTE2MjM5MDIyfQ.SflKxwRJSMeKKF2QT4fwpMeJf36POk6yJV_adQssw5c"
+      },
+      "UserRegistration": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "john1234"
+          },
+          "confirmPassword": {
+            "type": "string",
+            "minLength": 8,
+            "example": "john1234"
+          }
+        }
+      },
+      "UserLogin": {
+        "type": "object",
+        "properties": {
+          "email": {
+            "type": "string",
+            "example": "john@example.com"
+          },
+          "password": {
+            "type": "string",
+            "minLength": 8,
+            "example": "john1234"
+          }
+        }
+      },
+      "UserProfile": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "John Doe"
+          },
+          "email": {
+            "type": "string",
+            "example": "john@example.com"
+          },
+          "image": {
+            "type": "string",
+            "format": "binary"
+          }
+        }
+      },
+      "NoteRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Sample Notes"
+          },
+          "notes": {
+            "type": "string",
+            "example": "lorem ipsum ...."
+          },
+          "categoryId": {
+            "type": "string",
+            "example": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "programming"
+            }
+          }
+        }
+      },
+      "NoteResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+          },
+          "name": {
+            "type": "string",
+            "example": "Sample Notes"
+          },
+          "notes": {
+            "type": "string",
+            "example": "lorem ipsum ...."
+          },
+          "category": {
+            "type": "string",
+            "example": "Programming"
+          },
+          "tags": {
+            "type": "array",
+            "items": {
+              "type": "string",
+              "example": "programming"
+            }
+          }
+        }
+      },
+      "CategoryRequest": {
+        "type": "object",
+        "properties": {
+          "name": {
+            "type": "string",
+            "example": "Programming"
+          },
+          "description": {
+            "type": "string",
+            "example": "All about programming"
+          }
+        }
+      },
+      "CategoryResponse": {
+        "type": "object",
+        "properties": {
+          "id": {
+            "type": "string",
+            "example": "f81d4fae-7dec-11d0-a765-00a0c91e6bf6"
+          },
+          "name": {
+            "type": "string",
+            "example": "Programming"
+          },
+          "description": {
+            "type": "string",
+            "example": "All about programming"
+          }
+        }
+      }
+    },
+    "securitySchemes": {
+      "bearerAuth": {
+        "type": "http",
+        "scheme": "bearer",
+        "bearerFormat": "JWT"
+      }
+    }
+  }
+}
