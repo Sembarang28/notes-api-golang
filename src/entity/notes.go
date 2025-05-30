@@ -1,6 +1,9 @@
 package entity
 
+import "gorm.io/gorm"
+
 type Notes struct {
+	gorm.Model
 	ID         string   `gorm:"column:id;primaryKey;type:uuid;default:uuid_generate_v4()"`
 	Name       string   `gorm:"column:name;not null"`
 	Notes      string   `gorm:"column:notes;not null;type:text"`

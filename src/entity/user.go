@@ -4,9 +4,11 @@ import (
 	"time"
 
 	"github.com/google/uuid"
+	"gorm.io/gorm"
 )
 
 type User struct {
+	gorm.Model
 	ID        uuid.UUID `gorm:"column:id;primaryKey;type:uuid;default:uuid_generate_v4()"`
 	name      string    `gorm:"column:name;not null"`
 	Email     string    `gorm:"column:email;uniqueIndex;not null"`

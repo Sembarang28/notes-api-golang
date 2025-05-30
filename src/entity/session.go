@@ -1,6 +1,9 @@
 package entity
 
+import "gorm.io/gorm"
+
 type Session struct {
+	gorm.Model
 	ID        string `gorm:"column:id;primaryKey;type:uuid;default:uuid_generate_v4()"`
 	UserID    string `gorm:"column:user_id;not null"`
 	token     string `gorm:"column:token;not null;uniqueIndex"`
