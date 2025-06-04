@@ -19,6 +19,7 @@ func NewAuthRouter(authController controllers.AuthController) *AuthRouter {
 func (r *AuthRouter) AuthRoutes(router fiber.Router) {
 	router.Post("/register", r.authController.Register)
 	router.Post("/login", r.authController.Login)
-	router.Post("/refresh", r.authController.RefreshToken)
+	router.Post("/refresh/web", r.authController.RefreshTokenWeb)
+	router.Post("/refresh/mobile", r.authController.RefreshTokenMobile)
 	router.Post("/logout", r.authController.Logout)
 }

@@ -119,7 +119,7 @@ func (h *AuthControllerImpl) Login(c *fiber.Ctx) error {
 	})
 }
 
-func (h *AuthControllerImpl) RefreshToken(c *fiber.Ctx) error {
+func (h *AuthControllerImpl) RefreshTokenWeb(c *fiber.Ctx) error {
 	refreshToken := c.Cookies("refresh_token")
 	if refreshToken == "" {
 		return c.Status(fiber.StatusUnauthorized).JSON(response.APIResponse{
@@ -130,6 +130,42 @@ func (h *AuthControllerImpl) RefreshToken(c *fiber.Ctx) error {
 	}
 
 	resData, err := h.AuthService.RefreshToken(refreshToken)
+	if err != nil {
+		switch {
+		case errors.Is(err, helpers.ErrUnauthorized):
+			return c.Status(fiber.StatusUnauthorized).JSON(response.APIResponse{
+				Code:    fiber.StatusUnauthorized,
+				Status:  false,
+				Message: "Invalid refresh token",
+			})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(response.APIResponse{
+				Code:    fiber.StatusInternalServerError,
+				Status:  false,
+				Message: "Internal server error",
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.APIResponse{
+		Code:    fiber.StatusOK,
+		Status:  true,
+		Message: "Token refreshed successfully",
+		Data:    resData,
+	})
+}
+
+func (h *AuthControllerImpl) RefreshTokenMobile(c *fiber.Ctx) error {
+	var reqData dto.UserRefreshRequest
+	if err := c.BodyParser(&reqData); err != nil {
+		return c.Status(fiber.StatusBadRequest).JSON(response.APIResponse{
+			Code:    fiber.StatusBadRequest,
+			Status:  false,
+			Message: "Invalid request body",
+		})
+	}
+
+	resData, err := h.AuthService.RefreshToken(reqData.RefreshToken)
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrUnauthorized):
