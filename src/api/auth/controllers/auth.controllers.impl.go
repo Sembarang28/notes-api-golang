@@ -12,12 +12,12 @@ import (
 )
 
 type AuthControllerImpl struct {
-	AuthService services.AuthService
+	authService services.AuthService
 }
 
 func NewAuthController(authService services.AuthService) AuthController {
 	return &AuthControllerImpl{
-		AuthService: authService,
+		authService: authService,
 	}
 }
 
@@ -31,7 +31,7 @@ func (h *AuthControllerImpl) Register(c *fiber.Ctx) error {
 		})
 	}
 
-	err := h.AuthService.Register(&reqData)
+	err := h.authService.Register(&reqData)
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrValidation):
@@ -72,7 +72,7 @@ func (h *AuthControllerImpl) Login(c *fiber.Ctx) error {
 		})
 	}
 
-	resData, err := h.AuthService.Login(&reqData)
+	resData, err := h.authService.Login(&reqData)
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrValidation):
@@ -129,7 +129,7 @@ func (h *AuthControllerImpl) RefreshTokenWeb(c *fiber.Ctx) error {
 		})
 	}
 
-	resData, err := h.AuthService.RefreshToken(refreshToken)
+	resData, err := h.authService.RefreshToken(refreshToken)
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrUnauthorized):
@@ -165,7 +165,7 @@ func (h *AuthControllerImpl) RefreshTokenMobile(c *fiber.Ctx) error {
 		})
 	}
 
-	resData, err := h.AuthService.RefreshToken(reqData.RefreshToken)
+	resData, err := h.authService.RefreshToken(reqData.RefreshToken)
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrUnauthorized):
@@ -201,7 +201,7 @@ func (h *AuthControllerImpl) Logout(c *fiber.Ctx) error {
 		})
 	}
 
-	err := h.AuthService.Logout(refreshToken)
+	err := h.authService.Logout(refreshToken)
 	if err != nil {
 		switch {
 		case errors.Is(err, helpers.ErrUnauthorized):
