@@ -118,3 +118,76 @@ func (h *AuthControllerImpl) Login(c *fiber.Ctx) error {
 		Data:    resData,
 	})
 }
+
+func (h *AuthControllerImpl) RefreshToken(c *fiber.Ctx) error {
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(response.APIResponse{
+			Code:    fiber.StatusUnauthorized,
+			Status:  false,
+			Message: "Refresh token is required",
+		})
+	}
+
+	resData, err := h.AuthService.RefreshToken(refreshToken)
+	if err != nil {
+		switch {
+		case errors.Is(err, helpers.ErrUnauthorized):
+			return c.Status(fiber.StatusUnauthorized).JSON(response.APIResponse{
+				Code:    fiber.StatusUnauthorized,
+				Status:  false,
+				Message: "Invalid refresh token",
+			})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(response.APIResponse{
+				Code:    fiber.StatusInternalServerError,
+				Status:  false,
+				Message: "Internal server error",
+			})
+		}
+	}
+
+	return c.Status(fiber.StatusOK).JSON(response.APIResponse{
+		Code:    fiber.StatusOK,
+		Status:  true,
+		Message: "Token refreshed successfully",
+		Data:    resData,
+	})
+}
+
+func (h *AuthControllerImpl) Logout(c *fiber.Ctx) error {
+	refreshToken := c.Cookies("refresh_token")
+	if refreshToken == "" {
+		return c.Status(fiber.StatusUnauthorized).JSON(response.APIResponse{
+			Code:    fiber.StatusUnauthorized,
+			Status:  false,
+			Message: "Refresh token is required",
+		})
+	}
+
+	err := h.AuthService.Logout(refreshToken)
+	if err != nil {
+		switch {
+		case errors.Is(err, helpers.ErrUnauthorized):
+			return c.Status(fiber.StatusUnauthorized).JSON(response.APIResponse{
+				Code:    fiber.StatusUnauthorized,
+				Status:  false,
+				Message: "Invalid refresh token",
+			})
+		default:
+			return c.Status(fiber.StatusInternalServerError).JSON(response.APIResponse{
+				Code:    fiber.StatusInternalServerError,
+				Status:  false,
+				Message: "Internal server error",
+			})
+		}
+	}
+
+	c.ClearCookie("refresh_token")
+
+	return c.Status(fiber.StatusOK).JSON(response.APIResponse{
+		Code:    fiber.StatusOK,
+		Status:  true,
+		Message: "Logout successful",
+	})
+}

@@ -7,6 +7,7 @@ import (
 	"notes-management-api/src/api/auth/repository"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/models"
+	"time"
 
 	"github.com/go-playground/validator/v10"
 	"github.com/google/uuid"
@@ -92,6 +93,7 @@ func (s *AuthServiceImpl) Login(request *dto.UserLoginRequest) (*dto.UserLoginRe
 		Token:     refreshToken.Token,
 		ExpiresAt: refreshToken.ExpiresAt,
 		IssuedAt:  refreshToken.IssuedAt,
+		Revoked:   false,
 	}
 
 	if err := s.authRepository.SaveSession(session); err != nil {
@@ -105,4 +107,56 @@ func (s *AuthServiceImpl) Login(request *dto.UserLoginRequest) (*dto.UserLoginRe
 		Email:        user.Email,
 		PhotoUrl:     *user.Photo,
 	}, nil
+}
+
+func (s *AuthServiceImpl) RefreshToken(token string) (*dto.UserRefreshResponse, error) {
+	// Verify the refresh token
+	claims, err := helpers.VerifyRefreshToken(token)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", helpers.ErrUnauthorized, err)
+	}
+
+	// Find session by refresh token
+	session, err := s.authRepository.FindSessionByIDAndToken(claims.SessionID, token)
+	if err != nil {
+		switch {
+		case errors.Is(err, helpers.ErrNotFound):
+			return nil, fmt.Errorf("%w: invalid refresh token", helpers.ErrUnauthorized)
+		default:
+			return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+		}
+	}
+
+	// Check if session is revoked
+	if session.Revoked {
+		return nil, fmt.Errorf("%w: refresh token has been revoked", helpers.ErrUnauthorized)
+	}
+
+	// Check if session is expired
+	if session.ExpiresAt.Before(time.Now()) {
+		return nil, fmt.Errorf("%w: refresh token has expired", helpers.ErrUnauthorized)
+	}
+
+	// Generate new access token
+	accessToken, err := helpers.NewAccessToken(session.UserID)
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+	}
+
+	return &dto.UserRefreshResponse{
+		AccessToken: accessToken,
+	}, nil
+}
+
+func (s *AuthServiceImpl) Logout(token string) error {
+	// Update revoke status of the session
+	err := s.authRepository.UpdateSession(token)
+	if err != nil {
+		if errors.Is(err, helpers.ErrNotFound) {
+			return fmt.Errorf("%w: invalid refresh token", helpers.ErrUnauthorized)
+		}
+		return fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+	}
+
+	return nil
 }

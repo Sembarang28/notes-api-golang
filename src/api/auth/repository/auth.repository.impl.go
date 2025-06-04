@@ -43,3 +43,27 @@ func (r *AuthRepositoryImpl) SaveSession(session *models.Session) error {
 	}
 	return nil
 }
+
+func (r *AuthRepositoryImpl) FindSessionByIDAndToken(sessionID, token string) (*models.Session, error) {
+	var session models.Session
+	if err := r.db.Where("id = ? AND token = ?", sessionID, token).First(&session).Error; err != nil {
+		if err == gorm.ErrRecordNotFound {
+			return nil, fmt.Errorf("%w: session with id '%s' and token '%s' not found", helpers.ErrNotFound, sessionID, token)
+		}
+		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+	}
+	return &session, nil
+}
+
+func (r *AuthRepositoryImpl) UpdateSession(token string) error {
+	result := r.db.Where("token = ?", token).Updates(&models.Session{Revoked: true})
+
+	if result.Error != nil {
+		return fmt.Errorf("%w: %v", helpers.ErrInternalServer, result.Error)
+	}
+
+	if result.RowsAffected == 0 {
+		return fmt.Errorf("%w: session with token '%s' not found", helpers.ErrNotFound, token)
+	}
+	return nil
+}
