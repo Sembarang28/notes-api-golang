@@ -183,7 +183,15 @@ func (h *AuthControllerImpl) Logout(c *fiber.Ctx) error {
 		}
 	}
 
-	c.ClearCookie("refresh_token")
+	c.Cookie(&fiber.Cookie{
+		Name:     "refresh_token",
+		Value:    "",
+		Expires:  time.Now().Add(-1 * time.Hour),
+		MaxAge:   -1,
+		Path:     "/",
+		HTTPOnly: true,
+		Secure:   true,
+	})
 
 	return c.Status(fiber.StatusOK).JSON(response.APIResponse{
 		Code:    fiber.StatusOK,

@@ -4,6 +4,7 @@ import (
 	"fmt"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/models"
+	"strings"
 
 	"gorm.io/gorm"
 )
@@ -18,7 +19,7 @@ func NewAuthRepository(db *gorm.DB) AuthRepository {
 
 func (r *AuthRepositoryImpl) Save(user *models.User) error {
 	if err := r.db.Create(user).Error; err != nil {
-		if err == gorm.ErrDuplicatedKey {
+		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
 			return fmt.Errorf("%w: email '%s' already exists", helpers.ErrEmailAlreadyExists, user.Email)
 		}
 		return fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
@@ -29,7 +30,7 @@ func (r *AuthRepositoryImpl) Save(user *models.User) error {
 func (r *AuthRepositoryImpl) FindByEmail(email string) (*models.User, error) {
 	var user models.User
 	if err := r.db.Where("email = ?", email).First(&user).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if strings.Contains(err.Error(), "record not found") {
 			return nil, fmt.Errorf("%w: user with email '%s' not found", helpers.ErrNotFound, email)
 		}
 		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
@@ -47,7 +48,7 @@ func (r *AuthRepositoryImpl) SaveSession(session *models.Session) error {
 func (r *AuthRepositoryImpl) FindSessionByIDAndToken(sessionID, token string) (*models.Session, error) {
 	var session models.Session
 	if err := r.db.Where("id = ? AND token = ?", sessionID, token).First(&session).Error; err != nil {
-		if err == gorm.ErrRecordNotFound {
+		if strings.Contains(err.Error(), "record not found") {
 			return nil, fmt.Errorf("%w: session with id '%s' and token '%s' not found", helpers.ErrNotFound, sessionID, token)
 		}
 		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
