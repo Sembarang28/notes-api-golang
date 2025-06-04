@@ -1,13 +1,27 @@
 package main
 
 import (
+	"notes-management-api/src/api"
+	"notes-management-api/src/config"
+
+	"github.com/go-playground/validator/v10"
 	"github.com/gofiber/fiber/v2"
 )
 
 func main() {
+	config.LoadEnv()
 	app := fiber.New()
-	app.Get("/test", func(c *fiber.Ctx) error {
-		return c.JSON(fiber.Map{"message": "hello world"})
-	})
-	app.Listen(":8000")
+	db := config.NewDatabaseConnection()
+	validate := validator.New()
+
+	// app.Use(cors.New(cors.Config{
+	// 	AllowOrigins:     "*",
+	// 	AllowCredentials: true,
+	// }))
+
+	api.App(app, db, validate)
+
+	if err := app.Listen(":3000"); err != nil {
+		panic(err)
+	}
 }
