@@ -1,6 +1,7 @@
 package helpers
 
 import (
+	"fmt"
 	"os"
 	"time"
 
@@ -8,8 +9,8 @@ import (
 )
 
 var (
-	accessToken  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
-	refreshToken = []byte(os.Getenv("REFRESH_TOKEN_SECRET"))
+	accessTokenKey  = []byte(os.Getenv("ACCESS_TOKEN_SECRET"))
+	refreshTokenKey = []byte(os.Getenv("REFRESH_TOKEN_SECRET"))
 )
 
 type Token struct {
@@ -38,7 +39,7 @@ func NewAccessToken(UserID string) (string, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(accessToken)
+	tokenString, err := token.SignedString(accessTokenKey)
 	if err != nil {
 		return "", err
 	}
@@ -59,7 +60,7 @@ func NewRefreshToken(SessionID string) (*Token, error) {
 	}
 
 	token := jwt.NewWithClaims(jwt.SigningMethodHS256, claims)
-	tokenString, err := token.SignedString(refreshToken)
+	tokenString, err := token.SignedString(refreshTokenKey)
 	if err != nil {
 		return nil, err
 	}
@@ -69,4 +70,21 @@ func NewRefreshToken(SessionID string) (*Token, error) {
 		IssuedAt:  iat,
 		ExpiresAt: exp,
 	}, nil
+}
+
+func VerifyRefreshToken(tokenStr string) (*RefreshTokenClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &RefreshTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return refreshTokenKey, nil
+	})
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrUnauthorized, err)
+	}
+
+	claims, ok := token.Claims.(*RefreshTokenClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("%w: invalid token", ErrUnauthorized)
+	}
+
+	// Expiry check is already handled by jwt.ParseWithClaims if RegisteredClaims is used correctly
+	return claims, nil
 }

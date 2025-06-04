@@ -1,8 +1,11 @@
 package helpers
 
-import "errors"
+import (
+	"errors"
+)
 
 var (
+	ErrClientError        = errors.New("client error")
 	ErrNotFound           = errors.New("not found error")
 	ErrInternalServer     = errors.New("internal server error")
 	ErrValidation         = errors.New("validation error")
