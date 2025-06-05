@@ -1,4 +1,4 @@
-package repository
+package users
 
 import (
 	"notes-management-api/src/models"

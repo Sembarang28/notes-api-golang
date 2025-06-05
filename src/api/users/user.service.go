@@ -1,4 +1,4 @@
-package services
+package users
 
 import (
 	"notes-management-api/src/api/users/dto"
