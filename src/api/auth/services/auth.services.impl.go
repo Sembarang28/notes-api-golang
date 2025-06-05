@@ -3,8 +3,8 @@ package services
 import (
 	"errors"
 	"fmt"
+	"notes-management-api/src/api/auth"
 	"notes-management-api/src/api/auth/dto"
-	"notes-management-api/src/api/auth/repository"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/models"
 	"time"
@@ -14,11 +14,11 @@ import (
 )
 
 type AuthServiceImpl struct {
-	authRepository repository.AuthRepository
+	authRepository auth.AuthRepository
 	validate       *validator.Validate
 }
 
-func NewAuthService(authRepository repository.AuthRepository, validate *validator.Validate) AuthService {
+func NewAuthService(authRepository auth.AuthRepository, validate *validator.Validate) auth.AuthService {
 	return &AuthServiceImpl{
 		authRepository: authRepository,
 		validate:       validate,

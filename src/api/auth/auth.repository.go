@@ -1,4 +1,4 @@
-package repository
+package auth
 
 import "notes-management-api/src/models"
 

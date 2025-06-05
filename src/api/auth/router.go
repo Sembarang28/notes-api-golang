@@ -1,16 +1,14 @@
 package auth
 
 import (
-	"notes-management-api/src/api/auth/controllers"
-
 	"github.com/gofiber/fiber/v2"
 )
 
 type AuthRouter struct {
-	authController controllers.AuthController
+	authController AuthController
 }
 
-func NewAuthRouter(authController controllers.AuthController) *AuthRouter {
+func NewAuthRouter(authController AuthController) *AuthRouter {
 	return &AuthRouter{
 		authController: authController,
 	}

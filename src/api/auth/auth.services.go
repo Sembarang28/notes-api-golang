@@ -1,4 +1,4 @@
-package services
+package auth
 
 import "notes-management-api/src/api/auth/dto"
 

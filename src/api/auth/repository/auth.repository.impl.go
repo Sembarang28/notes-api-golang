@@ -2,6 +2,7 @@ package repository
 
 import (
 	"fmt"
+	"notes-management-api/src/api/auth"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/models"
 	"strings"
@@ -13,7 +14,7 @@ type AuthRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewAuthRepository(db *gorm.DB) AuthRepository {
+func NewAuthRepository(db *gorm.DB) auth.AuthRepository {
 	return &AuthRepositoryImpl{db: db}
 }
 
