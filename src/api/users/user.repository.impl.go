@@ -28,14 +28,34 @@ func (r *UserRepositoryImpl) FindById(id string) (*models.User, error) {
 	return &user, nil
 }
 
-func (r *UserRepositoryImpl) Update(user *models.User) error {
-	if err := r.db.Where("id = ?", user.ID).Save(user).Error; err != nil {
+func (r *UserRepositoryImpl) Update(id, name, email, photo string) error {
+	err := r.db.Model(&models.User{}).
+		Where("id = ?", id).
+		Updates(map[string]interface{}{
+			"name":  name,
+			"email": email,
+			"photo": photo,
+		}).Error
+	if err != nil {
 		if strings.Contains(err.Error(), "record not found") {
-			return fmt.Errorf("'%w': user with id '%s' not found", helpers.ErrNotFound, user.ID)
+			return fmt.Errorf("'%w': user with id '%s' not found", helpers.ErrNotFound, id)
 		}
 
 		if strings.Contains(err.Error(), "duplicate key value violates unique constraint") {
-			return fmt.Errorf("'%w': email '%s' already exists", helpers.ErrEmailAlreadyExists, user.Email)
+			return fmt.Errorf("'%w': email '%s' already exists", helpers.ErrEmailAlreadyExists, email)
+		}
+	}
+
+	return nil
+}
+
+func (r *UserRepositoryImpl) UpdatePassword(id, newPassword string) error {
+	err := r.db.Model(&models.User{}).
+		Where("id = ?", id).
+		Update("password", newPassword).Error
+	if err != nil {
+		if strings.Contains(err.Error(), "record not found") {
+			return fmt.Errorf("'%w': user with id '%s' not found", helpers.ErrNotFound, id)
 		}
 	}
 

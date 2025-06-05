@@ -52,12 +52,14 @@ func (h *UserControllerImpl) UpdateUser(c *fiber.Ctx) error {
 	userId := c.Locals("userId").(string)
 
 	var userUpdateData dto.UserUpdateRequest
-	if err := c.BodyParser(&userUpdateData); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.APIResponse{
-			Code:    fiber.StatusBadRequest,
-			Status:  false,
-			Message: "Invalid request body",
-		})
+	userUpdateData.Name = c.FormValue("name")
+	userUpdateData.Email = c.FormValue("email")
+
+	file, err := c.FormFile("photo")
+	if err == nil {
+		userUpdateData.Photo = file
+	} else {
+		userUpdateData.Photo = nil
 	}
 
 	if err := h.userService.UpdateUser(userId, &userUpdateData); err != nil {

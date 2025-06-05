@@ -6,5 +6,6 @@ import (
 
 type UserRepository interface {
 	FindById(id string) (*models.User, error)
-	Update(user *models.User) error
+	Update(id, name, email, photo string) error
+	UpdatePassword(id, newPassword string) error
 }

@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"notes-management-api/src/api/users/dto"
 	"notes-management-api/src/helpers"
-	"notes-management-api/src/models"
 	"os"
 	"path/filepath"
 	"strings"
@@ -28,9 +27,7 @@ func NewUserService(userRepository UserRepository, validator *validator.Validate
 }
 
 func (s *UserServiceImpl) GetUserById(id string) (*dto.UserResponse, error) {
-	fmt.Println(id)
 	user, err := s.userRepository.FindById(id)
-	fmt.Println(user.Name)
 
 	if err != nil {
 		return nil, err
@@ -42,12 +39,19 @@ func (s *UserServiceImpl) GetUserById(id string) (*dto.UserResponse, error) {
 	}, nil
 }
 
-func (s *UserServiceImpl) UpdateUser(id string, request *dto.UserUpdateRequest) error { // Ensure the user ID is set to the correct value
+func (s *UserServiceImpl) UpdateUser(id string, request *dto.UserUpdateRequest) error {
 	if err := s.validator.Struct(request); err != nil {
 		return fmt.Errorf("%w: %v", helpers.ErrValidation, err)
 	}
 
+	user, err := s.userRepository.FindById(id)
+	if err != nil {
+		return err
+	}
+
 	var photoPath string
+
+	// If new photo is uploaded
 	if request.Photo != nil {
 		src, err := request.Photo.Open()
 		if err != nil {
@@ -65,24 +69,34 @@ func (s *UserServiceImpl) UpdateUser(id string, request *dto.UserUpdateRequest) 
 			return fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
 		}
 
+		// Delete previous photo if exists
+		if user.Photo != nil && *user.Photo != "" {
+			if err := os.Remove(*user.Photo); err != nil && !os.IsNotExist(err) {
+				return fmt.Errorf("%w: failed to delete previous photo: %v", helpers.ErrInternalServer, err)
+			}
+		}
+
+		// Create public dir and generate filename
 		os.MkdirAll("public", os.ModePerm)
 		filename := fmt.Sprintf("%s_%s%s", time.Now().Format("20060102T150405.000"), uuid.New().String(), ext)
 		savePath := filepath.Join("public", filename)
+
+		// Save compressed image
 		if err := imaging.Save(img, savePath, imaging.JPEGQuality(80)); err != nil {
 			return fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
 		}
 
-		savePath = filepath.ToSlash(savePath) // Ensure the path is in the correct format for web access
+		// Normalize path for web
+		photoPath = filepath.ToSlash(savePath)
+	} else {
+		if user.Photo != nil {
+			photoPath = *user.Photo // Keep old photo if no new one uploaded
+		} else {
+			photoPath = ""
+		}
 	}
 
-	user := &models.User{
-		ID:    id,
-		Email: request.Email,
-		Name:  request.Name,
-		Photo: &photoPath,
-	}
-
-	return s.userRepository.Update(user)
+	return s.userRepository.Update(id, request.Name, request.Email, photoPath)
 }
 
 func (s *UserServiceImpl) UpdateUserPassword(id string, request *dto.UserUpdatePasswordRequest) error {
@@ -110,10 +124,5 @@ func (s *UserServiceImpl) UpdateUserPassword(id string, request *dto.UserUpdateP
 		return err
 	}
 
-	user := &models.User{
-		ID:       id,
-		Password: hashedPassword,
-	}
-
-	return s.userRepository.Update(user)
+	return s.userRepository.UpdatePassword(id, hashedPassword)
 }

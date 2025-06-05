@@ -14,6 +14,8 @@ func main() {
 	db := config.NewDatabaseConnection()
 	validate := validator.New()
 
+	app.Static("/public", "./public")
+
 	// app.Use(cors.New(cors.Config{
 	// 	AllowOrigins:     "*",
 	// 	AllowCredentials: true,
