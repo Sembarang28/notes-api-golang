@@ -1,8 +1,7 @@
-package controllers
+package auth
 
 import (
 	"errors"
-	"notes-management-api/src/api/auth"
 	"notes-management-api/src/api/auth/dto"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/shared/response"
@@ -12,10 +11,10 @@ import (
 )
 
 type AuthControllerImpl struct {
-	authService auth.AuthService
+	authService AuthService
 }
 
-func NewAuthController(authService auth.AuthService) auth.AuthController {
+func NewAuthController(authService AuthService) AuthController {
 	return &AuthControllerImpl{
 		authService: authService,
 	}
