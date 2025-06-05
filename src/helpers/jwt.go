@@ -76,11 +76,30 @@ func VerifyRefreshToken(tokenStr string) (*RefreshTokenClaims, error) {
 	token, err := jwt.ParseWithClaims(tokenStr, &RefreshTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
 		return refreshTokenKey, nil
 	})
+
 	if err != nil {
 		return nil, fmt.Errorf("%w: %v", ErrUnauthorized, err)
 	}
 
 	claims, ok := token.Claims.(*RefreshTokenClaims)
+	if !ok || !token.Valid {
+		return nil, fmt.Errorf("%w: invalid token", ErrUnauthorized)
+	}
+
+	// Expiry check is already handled by jwt.ParseWithClaims if RegisteredClaims is used correctly
+	return claims, nil
+}
+
+func VerifyAccessToken(tokenStr string) (*AccessTokenClaims, error) {
+	token, err := jwt.ParseWithClaims(tokenStr, &AccessTokenClaims{}, func(token *jwt.Token) (interface{}, error) {
+		return accessTokenKey, nil
+	})
+
+	if err != nil {
+		return nil, fmt.Errorf("%w: %v", ErrUnauthorized, err)
+	}
+
+	claims, ok := token.Claims.(*AccessTokenClaims)
 	if !ok || !token.Valid {
 		return nil, fmt.Errorf("%w: invalid token", ErrUnauthorized)
 	}

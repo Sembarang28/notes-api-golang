@@ -10,5 +10,6 @@ var (
 	ErrInternalServer     = errors.New("internal server error")
 	ErrValidation         = errors.New("validation error")
 	ErrUnauthorized       = errors.New("unauthorized error")
-	ErrEmailAlreadyExists = errors.New("email already exists")
+	ErrUnprocessable      = errors.New("unprocessable entity error")
+	ErrEmailAlreadyExists = errors.New("email already exists error")
 )
