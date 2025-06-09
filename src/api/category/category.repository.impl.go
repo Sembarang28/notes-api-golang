@@ -2,6 +2,7 @@ package category
 
 import (
 	"fmt"
+	"notes-management-api/src/api/category/dto"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/models"
 	"strings"
@@ -24,15 +25,20 @@ func (r CategoryRepositoryImpl) Create(category *models.Category) error {
 	return nil
 }
 
-func (r CategoryRepositoryImpl) ReadAll(search string) ([]models.Category, error) {
-	var categories []models.Category
+func (r CategoryRepositoryImpl) ReadAll(search string) ([]dto.CategoryResponse, error) {
+	var categories []dto.CategoryResponse
 	if search != "" {
-		err := r.db.Where("name ILIKE ?", "%"+search+"%").Find(&categories).Error
+		err := r.db.Model(&models.Category{}).
+			Select("id::text, name, description").
+			Where("name ILIKE ?", "%"+search+"%").
+			Scan(&categories).Error
 		if err != nil {
 			return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
 		}
 	} else {
-		err := r.db.Find(&categories).Error
+		err := r.db.Model(&models.Category{}).
+			Select("id::text, name, description").
+			Scan(&categories).Error
 		if err != nil {
 			return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
 		}
@@ -40,15 +46,18 @@ func (r CategoryRepositoryImpl) ReadAll(search string) ([]models.Category, error
 	return categories, nil
 }
 
-func (r CategoryRepositoryImpl) Read(id string) (models.Category, error) {
-	category := models.Category{}
-	if err := r.db.First(&category, "id = ?", id).Error; err != nil {
+func (r CategoryRepositoryImpl) Read(id string) (*dto.CategoryResponse, error) {
+	category := dto.CategoryResponse{}
+	if err := r.db.Model(&models.Category{}).
+		Select("id::text, name, description").
+		Where("id = ?", id).
+		Scan(&category).Error; err != nil {
 		if strings.Contains(err.Error(), "record not found") {
-			return category, fmt.Errorf("%w: category with id '%s' not found", helpers.ErrNotFound, id)
+			return &category, fmt.Errorf("%w: category with id '%s' not found", helpers.ErrNotFound, id)
 		}
-		return category, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+		return &category, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
 	}
-	return category, nil
+	return &category, nil
 }
 
 func (r CategoryRepositoryImpl) Update(category *models.Category) error {
