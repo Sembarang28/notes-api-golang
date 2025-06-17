@@ -35,8 +35,8 @@ func (s CategoryServiceImpl) Create(request *dto.CategoryRequest, userId string)
 	return s.categoryRepository.Create(&category)
 }
 
-func (s CategoryServiceImpl) ReadAll(search string) ([]dto.CategoryResponse, error) {
-	categories, err := s.categoryRepository.ReadAll(search)
+func (s CategoryServiceImpl) ReadAll(search, userId string) ([]dto.CategoryResponse, error) {
+	categories, err := s.categoryRepository.ReadAll(search, userId)
 
 	if err != nil {
 		return nil, err
@@ -45,8 +45,8 @@ func (s CategoryServiceImpl) ReadAll(search string) ([]dto.CategoryResponse, err
 	return categories, nil
 }
 
-func (s CategoryServiceImpl) Read(id string) (*dto.CategoryResponse, error) {
-	category, err := s.categoryRepository.Read(id)
+func (s CategoryServiceImpl) Read(id, userId string) (*dto.CategoryResponse, error) {
+	category, err := s.categoryRepository.Read(id, userId)
 
 	if err != nil {
 		return nil, err
@@ -70,6 +70,6 @@ func (s CategoryServiceImpl) Update(request *dto.CategoryRequest, id, userId str
 	return s.categoryRepository.Update(&category)
 }
 
-func (s CategoryServiceImpl) Delete(id string) error {
-	return s.categoryRepository.Delete(id)
+func (s CategoryServiceImpl) Delete(id, userId string) error {
+	return s.categoryRepository.Delete(id, userId)
 }

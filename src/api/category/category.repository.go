@@ -7,8 +7,8 @@ import (
 
 type CategoryRepository interface {
 	Create(category *models.Category) error
-	ReadAll(search string) ([]dto.CategoryResponse, error)
-	Read(id string) (*dto.CategoryResponse, error)
+	ReadAll(search, userId string) ([]dto.CategoryResponse, error)
+	Read(id, userId string) (*dto.CategoryResponse, error)
 	Update(category *models.Category) error
-	Delete(id string) error
+	Delete(id, userId string) error
 }
