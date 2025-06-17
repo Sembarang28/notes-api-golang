@@ -2,6 +2,7 @@ package api
 
 import (
 	"notes-management-api/src/api/auth"
+	"notes-management-api/src/api/category"
 	"notes-management-api/src/api/users"
 	"notes-management-api/src/shared/middleware"
 
@@ -23,4 +24,10 @@ func App(app *fiber.App, db *gorm.DB, validate *validator.Validate) {
 	userControllerImpl := users.NewUserController(userServiceImpl)
 	userRouter := users.NewUserRouter(userControllerImpl)
 	userRouter.UserRoutes(api.Group("/user", middleware.UserSession()))
+
+	categoryRepositoryImpl := category.NewCategoryRepository(db)
+	categoryServiceImpl := category.NewCategoryService(categoryRepositoryImpl, validate)
+	categoryControllerImpl := category.NewCategoryController(categoryServiceImpl)
+	categoryRouter := category.NewCategoryRouter(categoryControllerImpl)
+	categoryRouter.CategoryRouter(api.Group("/category", middleware.UserSession()))
 }
