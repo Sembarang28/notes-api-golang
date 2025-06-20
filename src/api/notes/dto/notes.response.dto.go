@@ -6,5 +6,6 @@ type NotesResponse struct {
 	Notes        string   `json:"notes"`
 	CategoryID   string   `json:"category_id"`
 	CategoryName string   `json:"category_name"`
-	Tags         []string `json:"tags"`
+	Tags         []string `json:"tags" gorm:"-"`
+	RawTags      string   `json:"-" gorm:"column:tags"` // used only during scan
 }

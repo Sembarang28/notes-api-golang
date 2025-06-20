@@ -2,6 +2,7 @@ package notes
 
 import (
 	"errors"
+	"fmt"
 	"notes-management-api/src/api/notes/dto"
 	"notes-management-api/src/helpers"
 	"notes-management-api/src/shared/response"
@@ -56,10 +57,12 @@ func (h NotesControllerImpl) Create(c *fiber.Ctx) error {
 		Message: "Notes created successfully",
 	})
 }
+
 func (h NotesControllerImpl) ReadAll(c *fiber.Ctx) error {
 	var queries dto.NotesReadAllRequestQuery
 	userId := c.Locals("userId").(string)
-	if err := c.QueryParser(queries); err != nil {
+	if err := c.QueryParser(&queries); err != nil {
+		fmt.Println(err)
 		return c.Status(fiber.StatusInternalServerError).JSON(response.APIResponse{
 			Code:    fiber.StatusInternalServerError,
 			Status:  false,
@@ -196,6 +199,6 @@ func (h NotesControllerImpl) Delete(c *fiber.Ctx) error {
 	return c.Status(fiber.StatusOK).JSON(response.APIResponse{
 		Code:    fiber.StatusOK,
 		Status:  true,
-		Message: "Notes updated successfully",
+		Message: "Notes deleted successfully",
 	})
 }

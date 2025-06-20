@@ -28,14 +28,14 @@ func (r NotesRepositoryImpl) Create(notes *models.Notes) error {
 }
 
 func (r NotesRepositoryImpl) ReadAll(search, userId string, tags []string) ([]dto.NotesResponse, error) {
-	var notes []dto.NotesResponse
+	var rawNotes []dto.NotesResponse
 
 	query := r.db.Model(&models.Notes{}).
-		Select("notes.id::text, notes.name, notes.notes, notes.category_id, categories.name as category_name, notes.tags").
-		Joins("JOIN categories ON categories.id = notes.category_id").
+		Select(`notes.id::text, notes.name, notes.notes, notes.category_id, category.name as category_name, notes.tags::text`).
+		Joins("JOIN category ON category.id = notes.category_id").
 		Where("notes.user_id = ?", userId)
 
-	// search by name
+	// Search by name
 	if search != "" {
 		query = query.Where("notes.name ILIKE ?", "%"+search+"%")
 	}
@@ -49,13 +49,24 @@ func (r NotesRepositoryImpl) ReadAll(search, userId string, tags []string) ([]dt
 		query = query.Where("notes.tags @> ?::jsonb", string(tagJson))
 	}
 
-	// Execute query and handle result
-	result := query.Scan(&notes)
+	// Execute query into rawNotes
+	result := query.Scan(&rawNotes)
 	if result.Error != nil {
 		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, result.Error)
 	}
 	if result.RowsAffected == 0 {
 		return nil, helpers.ErrNotFound
+	}
+
+	// Decode raw JSON tags
+	notes := make([]dto.NotesResponse, 0, len(rawNotes))
+	for _, n := range rawNotes {
+		var decodedTags []string
+		if err := json.Unmarshal([]byte(n.RawTags), &decodedTags); err != nil {
+			decodedTags = []string{} // fallback to empty
+		}
+		n.Tags = decodedTags
+		notes = append(notes, n)
 	}
 
 	return notes, nil
@@ -65,8 +76,8 @@ func (r NotesRepositoryImpl) ReadOne(id, userId string) (*dto.NotesResponse, err
 	var note dto.NotesResponse
 
 	err := r.db.Model(&models.Notes{}).
-		Select("notes.id::text, notes.name, notes.notes, notes.category_id, categories.name as category_name, notes.tags").
-		Joins("JOIN categories ON categories.id = notes.category_id").
+		Select("notes.id::text, notes.name, notes.notes, notes.category_id, category.name as category_name, notes.tags").
+		Joins("JOIN category ON category.id = notes.category_id").
 		Where("notes.id = ? AND notes.user_id = ?", id, userId).
 		Scan(&note).Error
 
@@ -76,6 +87,12 @@ func (r NotesRepositoryImpl) ReadOne(id, userId string) (*dto.NotesResponse, err
 	if note.ID == "" {
 		return nil, fmt.Errorf("%w: note with id '%s' not found", helpers.ErrNotFound, id)
 	}
+
+	var decodedTags []string
+	if err := json.Unmarshal([]byte(note.RawTags), &decodedTags); err != nil {
+		decodedTags = []string{} // fallback to empty
+	}
+	note.Tags = decodedTags
 
 	return &note, nil
 }
