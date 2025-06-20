@@ -22,8 +22,6 @@ func NewDatabaseConnection() *gorm.DB {
 		host, user, password, dbname, port, sslmode,
 	)
 
-	fmt.Println(dsn)
-
 	dialect := postgres.Open(dsn)
 	db, err := gorm.Open(dialect, &gorm.Config{})
 	if err != nil {
