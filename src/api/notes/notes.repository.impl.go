@@ -14,7 +14,7 @@ type NotesRepositoryImpl struct {
 	db *gorm.DB
 }
 
-func NewCategoryRepository(db *gorm.DB) NotesRepository {
+func NewNotesRepository(db *gorm.DB) NotesRepository {
 	return &NotesRepositoryImpl{db: db}
 }
 
