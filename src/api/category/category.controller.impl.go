@@ -90,15 +90,6 @@ func (h CategoryControllerImpl) Read(c *fiber.Ctx) error {
 	id := c.Params("id")
 	userId := c.Locals("userId").(string)
 
-	var reqData dto.CategoryRequest
-	if err := c.BodyParser(&reqData); err != nil {
-		return c.Status(fiber.StatusBadRequest).JSON(response.APIResponse{
-			Code:    fiber.StatusBadRequest,
-			Status:  false,
-			Message: "Invalid request body",
-		})
-	}
-
 	category, err := h.categoryService.Read(id, userId)
 	if err != nil {
 		switch {

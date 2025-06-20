@@ -40,16 +40,22 @@ func (r NotesRepositoryImpl) ReadAll(search, userId string, tags []string) ([]dt
 		query = query.Where("notes.name ILIKE ?", "%"+search+"%")
 	}
 
-	// filter tags if provided
+	// Filter by tags if provided
 	if len(tags) > 0 {
-		// Convert to PostgreSQL array syntax: '{"tag1","tag2"}'
-		tagQuery := "notes.tags @> ?::jsonb"
-		tagJson, _ := json.Marshal(tags) // convert to `["tag1","tag2"]`
-		query = query.Where(tagQuery, string(tagJson))
+		tagJson, err := json.Marshal(tags)
+		if err != nil {
+			return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+		}
+		query = query.Where("notes.tags @> ?::jsonb", string(tagJson))
 	}
 
-	if err := query.Scan(&notes).Error; err != nil {
-		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, err)
+	// Execute query and handle result
+	result := query.Scan(&notes)
+	if result.Error != nil {
+		return nil, fmt.Errorf("%w: %v", helpers.ErrInternalServer, result.Error)
+	}
+	if result.RowsAffected == 0 {
+		return nil, helpers.ErrNotFound
 	}
 
 	return notes, nil
